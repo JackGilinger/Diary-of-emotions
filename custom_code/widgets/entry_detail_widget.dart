@@ -7,260 +7,32 @@ import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
+import 'package:intl/intl.dart';
+
 class EntryDetailWidget extends StatefulWidget {
   const EntryDetailWidget({
     Key? key,
     this.width,
     this.height,
-    required this.entryData,
-    required this.onEdit,
-    required this.onDelete,
-    required this.onBack,
+    required this.entry,
+    required this.onEditPressed,
+    required this.onDeletePressed,
+    required this.onBackPressed,
   }) : super(key: key);
 
   final double? width;
   final double? height;
-  final Map<String, dynamic> entryData;
-  final Future<void> Function(Map<String, dynamic> entry) onEdit;
-  final Future<void> Function(String entryId) onDelete;
-  final Future<void> Function() onBack;
+  final Map<String, dynamic> entry;
+  final Future<void> Function() onEditPressed;
+  final Future<void> Function() onDeletePressed;
+  final Future<void> Function() onBackPressed;
 
   @override
   _EntryDetailWidgetState createState() => _EntryDetailWidgetState();
 }
 
 class _EntryDetailWidgetState extends State<EntryDetailWidget> {
-  late Map<String, dynamic> _entry;
-
-  @override
-  void initState() {
-    super.initState();
-    _entry = Map<String, dynamic>.from(widget.entryData);
-  }
-
-  void _showDeleteConfirmation() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Entry'),
-        content: Text('Are you sure you want to delete this entry? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              widget.onDelete(_entry['id'] as String);
-            },
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final emotion = _entry['emotion'] as String;
-    final emotionColor = _entry['emotionColor'] as Color;
-    final notes = _entry['notes'] as String;
-    final date = _entry['date'] as DateTime;
-
-    return Container(
-      width: widget.width ?? MediaQuery.of(context).size.width,
-      height: widget.height ?? MediaQuery.of(context).size.height,
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: widget.onBack,
-          ),
-          title: Text(
-            'Entry Detail',
-            style: FlutterFlowTheme.of(context).titleLarge,
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () => widget.onEdit(_entry),
-            ),
-            IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: _showDeleteConfirmation,
-            ),
-          ],
-          backgroundColor: FlutterFlowTheme.of(context).primary,
-          elevation: 0,
-        ),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Date and time
-              Card(
-                elevation: 0,
-                color: FlutterFlowTheme.of(context).secondaryBackground,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: FlutterFlowTheme.of(context).alternate,
-                    width: 1,
-                  ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        color: FlutterFlowTheme.of(context).primary,
-                      ),
-                      SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _formatDate(date),
-                            style: FlutterFlowTheme.of(context).titleMedium,
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            _formatTime(date),
-                            style: FlutterFlowTheme.of(context).bodySmall.copyWith(
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              
-              SizedBox(height: 24),
-              
-              // Emotion display
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: emotionColor.withOpacity(0.2),
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: emotionColor,
-                        ),
-                        child: Icon(
-                          _getEmotionIcon(emotion),
-                          size: 60,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      emotion,
-                      style: FlutterFlowTheme.of(context).headlineMedium,
-                    ),
-                  ],
-                ),
-              ),
-              
-              SizedBox(height: 36),
-              
-              // Notes section
-              if (notes.isNotEmpty) ...[
-                Text(
-                  'Notes',
-                  style: FlutterFlowTheme.of(context).titleMedium,
-                ),
-                SizedBox(height: 8),
-                Card(
-                  elevation: 0,
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: FlutterFlowTheme.of(context).alternate,
-                      width: 1,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text(
-                      notes,
-                      style: FlutterFlowTheme.of(context).bodyMedium,
-                    ),
-                  ),
-                ),
-              ] else ...[
-                Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text(
-                      'No notes added',
-                      style: FlutterFlowTheme.of(context).bodyMedium.copyWith(
-                        color: FlutterFlowTheme.of(context).secondaryText,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    if (isSameDay(date, now)) {
-      return 'Today';
-    } else if (isSameDay(date, now.subtract(Duration(days: 1)))) {
-      return 'Yesterday';
-    } else {
-      return '${_getDayOfWeek(date.weekday)}, ${_getMonthName(date.month)} ${date.day}, ${date.year}';
-    }
-  }
-
-  String _formatTime(DateTime date) {
-    final hour = date.hour == 0 ? 12 : (date.hour > 12 ? date.hour - 12 : date.hour);
-    final period = date.hour < 12 ? 'AM' : 'PM';
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '$hour:$minute $period';
-  }
-
-  bool isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-
-  String _getDayOfWeek(int day) {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    return days[day - 1];
-  }
-
-  String _getMonthName(int month) {
-    const months = [
-      'January', 'February', 'March', 'April',
-      'May', 'June', 'July', 'August',
-      'September', 'October', 'November', 'December'
-    ];
-    return months[month - 1];
-  }
+  bool _showDeleteConfirmation = false;
 
   IconData _getEmotionIcon(String emotion) {
     switch (emotion.toLowerCase()) {
@@ -279,5 +51,231 @@ class _EntryDetailWidgetState extends State<EntryDetailWidget> {
       default:
         return Icons.emoji_emotions;
     }
+  }
+
+  Color _getEmotionColor(String emotion) {
+    switch (emotion.toLowerCase()) {
+      case 'happy':
+        return const Color(0xFFFFD700);
+      case 'sad':
+        return const Color(0xFF6495ED);
+      case 'angry':
+        return const Color(0xFFFF6347);
+      case 'anxious':
+        return const Color(0xFF9370DB);
+      case 'calm':
+        return const Color(0xFF98FB98);
+      case 'tired':
+        return const Color(0xFFD3D3D3);
+      default:
+        return Colors.grey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final DateTime entryDate = widget.entry['date'] as DateTime;
+    final String emotion = widget.entry['emotion'] as String;
+    final String notes = widget.entry['notes'] as String;
+    final Color emotionColor = _getEmotionColor(emotion);
+
+    return Container(
+      width: widget.width ?? MediaQuery.of(context).size.width,
+      height: widget.height ?? MediaQuery.of(context).size.height,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'Entry Details',
+            style: FlutterFlowTheme.of(context).titleLarge.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: widget.onBackPressed,
+          ),
+          elevation: 0,
+          backgroundColor: FlutterFlowTheme.of(context).primary,
+        ),
+        body: _showDeleteConfirmation
+            ? _buildDeleteConfirmation()
+            : _buildEntryDetails(context, entryDate, emotion, notes, emotionColor),
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      ),
+    );
+  }
+
+  Widget _buildEntryDetails(
+    BuildContext context,
+    DateTime entryDate,
+    String emotion,
+    String notes,
+    Color emotionColor,
+  ) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Date display with formatted date
+          Text(
+            DateFormat.yMMMMd().format(entryDate),
+            style: FlutterFlowTheme.of(context).titleMedium.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
+          ),
+          
+          SizedBox(height: 8),
+          
+          Text(
+            DateFormat.jm().format(entryDate),
+            style: FlutterFlowTheme.of(context).bodyMedium.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
+          ),
+          
+          SizedBox(height: 24),
+          
+          // Large emotion icon
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: emotionColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              _getEmotionIcon(emotion),
+              size: 70,
+              color: Colors.white,
+            ),
+          ),
+          
+          SizedBox(height: 16),
+          
+          // Emotion text
+          Text(
+            emotion,
+            style: FlutterFlowTheme.of(context).headlineMedium,
+          ),
+          
+          SizedBox(height: 24),
+          
+          // Notes section
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).secondaryBackground,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: FlutterFlowTheme.of(context).primaryBackground,
+                width: 2,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Notes',
+                  style: FlutterFlowTheme.of(context).titleSmall,
+                ),
+                SizedBox(height: 8),
+                Text(
+                  notes.isEmpty ? 'No notes added.' : notes,
+                  style: FlutterFlowTheme.of(context).bodyMedium,
+                ),
+              ],
+            ),
+          ),
+          
+          SizedBox(height: 32),
+          
+          // Action buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton.icon(
+                icon: Icon(Icons.edit),
+                label: Text('Edit'),
+                onPressed: widget.onEditPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: FlutterFlowTheme.of(context).primary,
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+              ),
+              ElevatedButton.icon(
+                icon: Icon(Icons.delete),
+                label: Text('Delete'),
+                onPressed: () {
+                  setState(() {
+                    _showDeleteConfirmation = true;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: FlutterFlowTheme.of(context).error,
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeleteConfirmation() {
+    return Center(
+      child: Card(
+        margin: EdgeInsets.all(16),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: FlutterFlowTheme.of(context).error,
+                size: 60,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Delete Entry?',
+                style: FlutterFlowTheme.of(context).headlineMedium,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'This action cannot be undone.',
+                style: FlutterFlowTheme.of(context).bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _showDeleteConfirmation = false;
+                      });
+                    },
+                    child: Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      widget.onDeletePressed();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: FlutterFlowTheme.of(context).error,
+                    ),
+                    child: Text('Delete'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
