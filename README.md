@@ -79,28 +79,21 @@ Emotion Diary is a minimalist mobile application designed to help users track an
 ## UI Logic
 
 ### AppWidget.dart Structure
-The application will use a single StatefulWidget with a PageController to manage "screens" as views within the widget:
+The application will use a single StatefulWidget with a PageController to manage navigation between screens:
 
-```
+```dart
 class AppWidget extends StatefulWidget {
   @override
   _AppWidgetState createState() => _AppWidgetState();
 }
 
 class _AppWidgetState extends State<AppWidget> {
-  // Controller to manage page transitions
   final PageController _pageController = PageController();
-  
-  // Current page index
   int _currentPage = 0;
-  
-  // Data storage for emotions
   List<EmotionEntry> _entries = [];
-  
-  // Theme mode
   bool _darkMode = false;
-  
-  // Methods for page navigation
+  EmotionEntry? _selectedEntry;
+
   void _navigateToPage(int page) {
     _pageController.animateToPage(
       page,
@@ -111,22 +104,21 @@ class _AppWidgetState extends State<AppWidget> {
       _currentPage = page;
     });
   }
-  
-  // Business logic callbacks
+
   void _addEmotionEntry(EmotionEntry entry) {
     setState(() {
       _entries.add(entry);
     });
-    _navigateToPage(0); // Return to home
+    _navigateToPage(0);
   }
-  
+
   void _deleteEmotionEntry(EmotionEntry entry) {
     setState(() {
       _entries.remove(entry);
     });
-    _navigateToPage(2); // Return to history
+    _navigateToPage(2);
   }
-  
+
   void _updateEmotionEntry(EmotionEntry oldEntry, EmotionEntry newEntry) {
     setState(() {
       final index = _entries.indexOf(oldEntry);
@@ -134,23 +126,21 @@ class _AppWidgetState extends State<AppWidget> {
         _entries[index] = newEntry;
       }
     });
-    _navigateToPage(3); // Return to detail view
+    _navigateToPage(3);
   }
-  
+
   void _toggleDarkMode() {
     setState(() {
       _darkMode = !_darkMode;
     });
   }
-  
+
   void _exportData() {
-    // Stub for export functionality
-    // In a real implementation, this would format the data and prepare it for export
+    // Implementation for data export
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    // Theme data based on mode
     final theme = _darkMode ? ThemeData.dark() : ThemeData.light();
     
     return MaterialApp(
@@ -158,23 +148,18 @@ class _AppWidgetState extends State<AppWidget> {
       home: Scaffold(
         body: PageView(
           controller: _pageController,
-          physics: NeverScrollableScrollPhysics(), // Disable swiping
+          physics: NeverScrollableScrollPhysics(),
           children: [
-            // 0: Home Screen
             HomeScreen(
               entries: _entries,
               onAddEntry: () => _navigateToPage(1),
               onViewHistory: () => _navigateToPage(2),
               onOpenSettings: () => _navigateToPage(5),
             ),
-            
-            // 1: Add Entry Screen
             AddEntryScreen(
               onSave: _addEmotionEntry,
               onCancel: () => _navigateToPage(0),
             ),
-            
-            // 2: History Screen
             HistoryScreen(
               entries: _entries,
               onEntryTap: (entry) {
@@ -183,23 +168,17 @@ class _AppWidgetState extends State<AppWidget> {
               },
               onBack: () => _navigateToPage(0),
             ),
-            
-            // 3: Entry Detail Screen
             EntryDetailScreen(
               entry: _selectedEntry,
               onEdit: () => _navigateToPage(4),
               onDelete: _deleteEmotionEntry,
               onBack: () => _navigateToPage(2),
             ),
-            
-            // 4: Edit Entry Screen (reusing Add Entry with prefilled data)
             AddEntryScreen(
               initialEntry: _selectedEntry,
-              onSave: (newEntry) => _updateEmotionEntry(_selectedEntry, newEntry),
+              onSave: (newEntry) => _updateEmotionEntry(_selectedEntry!, newEntry),
               onCancel: () => _navigateToPage(3),
             ),
-            
-            // 5: Settings Screen
             SettingsScreen(
               darkMode: _darkMode,
               onToggleDarkMode: _toggleDarkMode,
@@ -215,11 +194,11 @@ class _AppWidgetState extends State<AppWidget> {
 ```
 
 ### Data Model
-```
+```dart
 class EmotionEntry {
   final DateTime timestamp;
-  final String emotion; // "happy", "sad", "angry", "anxious", "calm"
-  final int intensity; // 1-5
+  final String emotion;  // "happy", "sad", "angry", "anxious", "calm"
+  final int intensity;  // 1-5
   final String notes;
   
   EmotionEntry({
@@ -231,16 +210,15 @@ class EmotionEntry {
 }
 ```
 
-### Transitions
-- All screen transitions will use the PageController with animated transitions
+### Transitions and Navigation
+- All screen transitions use the PageController with animated transitions (300ms, ease-in-out)
 - No external navigation or routing needed
-- All state is managed within the AppWidget
+- All state management contained within AppWidget
+- Navigation controlled through _navigateToPage method
 
 ### Critical Callbacks
-- `_addEmotionEntry`: Saves a new emotion entry
-- `_deleteEmotionEntry`: Removes an existing entry
-- `_updateEmotionEntry`: Modifies an existing entry
-- `_toggleDarkMode`: Switches between light and dark themes
-- `_exportData`: Prepares data for export (stub function)
-
-This design ensures all functionality is contained within a single widget while maintaining a clean separation of concerns between different "screens" of the application.
+- _addEmotionEntry: Saves a new emotion entry
+- _deleteEmotionEntry: Removes an existing entry
+- _updateEmotionEntry: Modifies an existing entry
+- _toggleDarkMode: Switches between light and dark themes
+- _exportData: Prepares data for export
